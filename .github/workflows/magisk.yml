@@ -364,18 +364,7 @@ jobs:
           sudo chmod 0700 system/sbin
           sudo cp magisk/* system/sbin/
           sudo cp magisk.zip system/sbin/magisk.apk
-          sudo tee -a system/sbin/loadpolicy.sh <<EOF
-          #!/system/bin/sh
-          mkdir -p /data/adb/magisk
-          cp /sbin/* /data/adb/magisk/
-          chmod -R 755 /data/adb/magisk
-          restorecon -R /data/adb/magisk
-          for module in \$(ls /data/adb/modules); do
-              if ! [ -f "/data/adb/modules/\$module/disable" ] && [ -f "/data/adb/modules/\$module/sepolicy.rule" ]; then
-                  /sbin/magiskpolicy --live --apply "/data/adb/modules/\$module/sepolicy.rule"
-              fi
-          done
-          EOF
+          
           sudo find system/sbin -type f -exec chmod 0755 {} \;
           sudo find system/sbin -type f -exec chown root:root {} \;
           sudo find system/sbin -type f -exec chcon --reference system/product {} \;
@@ -383,7 +372,7 @@ jobs:
           sudo patchelf --replace-needed libm.so "${HOME}/libm.so" ./magiskpolicy || true
           sudo patchelf --replace-needed libdl.so "${HOME}/libdl.so" ./magiskpolicy || true
           sudo patchelf --set-interpreter "${HOME}/linker64" ./magiskpolicy || true
-          chmod +x ./magiskpolicy
+          chmod 777 ./magiskpolicy
           echo '/dev/wsa-magisk(/.*)?    u:object_r:magisk_file:s0' | sudo tee -a system/vendor/etc/selinux/vendor_file_contexts
           echo '/data/adb/magisk(/.*)?   u:object_r:magisk_file:s0' | sudo tee -a system/vendor/etc/selinux/vendor_file_contexts
           sudo ./magiskpolicy --load system/vendor/etc/selinux/precompiled_sepolicy --save system/vendor/etc/selinux/precompiled_sepolicy --magisk "allow * magisk_file lnk_file *"
